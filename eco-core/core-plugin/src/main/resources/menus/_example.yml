@@ -1,78 +1,178 @@
-# The ID of the menu is the name of the .yml file,
-# for example help.yml has the ID of help
-# You can place menus anywhere in this folder,
-# including in subfolders if you want to organize your menu configs
-# _example.yml is not loaded.
+# ═══════════════════════════════════════════════════════════════════════════
+#                            ECOMENUS - EXAMPLE MENU
+# ═══════════════════════════════════════════════════════════════════════════
+# This is a comprehensive example showing all features of EcoMenus
+# Files starting with _ are not loaded, so this won't appear in-game
+#
+# MENU ID: The menu ID is the filename without .yml
+#   Example: "shop.yml" has ID "shop", "warps.yml" has ID "warps"
+#   You can organize menus in subfolders: "categories/food.yml" has ID "food"
+#
+# For more examples, check out:
+#   - _example_shop.yml (Shop with buy/sell actions)
+#   - _example_teleports.yml (Warp/teleport menu)
+#   - _example_player.yml (Player stats and info)
+# ═══════════════════════════════════════════════════════════════════════════
 
-# The title of the GUI
-title: "Example GUI"
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                          BASIC MENU SETTINGS                            │
+# └─────────────────────────────────────────────────────────────────────────┘
 
-# (Optional) The command to open the GUI, if not set, there will be no command.
+# The title shown at the top of the inventory GUI
+# Supports color codes (&a, &b, etc.) and PlaceholderAPI placeholders
+title: "&8[ &6Example Menu &8] &7- %player%"
+
+# (Optional) Command to open this menu
+# If not set, menu can only be opened via /ecomenu open <menu_id>
+# Players need permission: ecomenu.command.<menu_id> to use the command
 command: examplemenu
 
-# The size of the GUI, between 1 and 6
+# The number of rows in the GUI (1-6)
+# Each row has 9 slots, so rows: 6 = 54 slots total
 rows: 6
 
-# Read https://plugins.auxilor.io/effects/configuring-a-condition
-# The conditions required to open the GUI
-conditions: [ ]
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                        PERMISSION-BASED LOCKING                         │
+# └─────────────────────────────────────────────────────────────────────────┘
+# Conditions control who can OPEN this menu
+# Learn more: https://plugins.auxilor.io/effects/configuring-a-condition
+#
+# COMMON PERMISSION CONDITIONS:
+#   - Require a permission: has_permission permission:"menu.example.access"
+#   - Require multiple: has_permission permission:"vip.rank" + has_permission permission:"menu.unlock"
+#   - Check if player is op: is_op
+#
+# OTHER USEFUL CONDITIONS:
+#   - Check balance: has_money amount:1000
+#   - Check level: has_level amount:10
+#   - Check world: in_world world:"world"
+#   - Custom placeholder: placeholder placeholder:"%player_rank%" value:"VIP"
 
-# The messages to send when the conditions are not met
+conditions:
+  - id: has_permission
+    args:
+      permission: "menu.example.open"
+  # You can add more conditions - ALL must be met to open the menu
+  # - id: has_money
+  #   args:
+  #     amount: 100
+
+# Messages sent when conditions are NOT met (player can't open menu)
+# Supports multiple lines and color codes
 cannot-open-messages:
-  - "&cYou cannot open this menu!"
+  - "&cYou don't have permission to open this menu!"
+  - "&7Required permission: &emenu.example.open"
 
-# Read https://plugins.auxilor.io/effects/configuring-an-effect
-# Effects to run when the GUI is opened
-open-effects: [ ]
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                          MENU OPEN/CLOSE EFFECTS                        │
+# └─────────────────────────────────────────────────────────────────────────┘
+# Effects run when menu is opened or closed
+# Learn more: https://plugins.auxilor.io/effects/configuring-an-effect
+#
+# COMMON EFFECTS:
+#   - send_message: Send chat messages
+#   - play_sound: Play a sound effect
+#   - run_command: Execute a command as player or console
+#   - give_money: Add/remove money from player
+#   - give_item: Give items to player
 
-# Effects to run when the GUI is closed
-close-effects: [ ]
+# Effects to run when the menu is opened
+open-effects:
+  - id: play_sound
+    args:
+      sound: BLOCK_CHEST_OPEN
+      volume: 1.0
+      pitch: 1.0
+  # - id: send_message
+  #   args:
+  #     message: "&aWelcome to the menu!"
 
-# Options for the page arrows
-# If on the first page, the backwards arrow will not be shown,
-# and if on the last page, the forwards arrow will not be shown.
+# Effects to run when the menu is closed
+close-effects:
+  - id: play_sound
+    args:
+      sound: BLOCK_CHEST_CLOSE
+      volume: 1.0
+      pitch: 1.0
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                         PAGINATION (PAGE ARROWS)                        │
+# └─────────────────────────────────────────────────────────────────────────┘
+# Page arrows allow navigation between multiple pages
+# Arrows automatically hide on first/last page
+
+# Forward arrow (next page) - bottom right
 forwards-arrow:
-  item: arrow name:"&fNext Page"
-  enabled: true
+  item: arrow name:"&aNext Page &7→"
+  enabled: true  # Set to false to disable pagination
   location:
-    row: 6
-    column: 8
+    row: 6       # Bottom row
+    column: 8    # Second from right
 
+# Backward arrow (previous page) - bottom left
 backwards-arrow:
-  item: arrow name:"&fPrevious Page"
+  item: arrow name:"&a← &aPrevious Page"
   enabled: true
   location:
     row: 6
-    column: 2
+    column: 2    # Second from left
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      PAGES & MASKS (BACKGROUND)                         │
+# └─────────────────────────────────────────────────────────────────────────┘
+# Masks create decorative backgrounds for your menu
+# Each page can have its own mask pattern
+#
+# HOW MASKS WORK:
+#   1. Define a list of materials (items 1-9)
+#   2. Create a pattern using numbers 0-9
+#      - 0 = empty slot (no background item)
+#      - 1 = first material in the items list
+#      - 2 = second material in the items list
+#      - etc.
+#   3. Each pattern row must be EXACTLY 9 characters long
+#   4. Number of pattern rows must match menu rows (6 in this example)
+#
+# VISUAL GUIDE:
+#   Pattern "111101111" creates:
+#   [1][1][1][1][0][1][1][1][1]
+#    ↓  ↓  ↓  ↓  ↓  ↓  ↓  ↓  ↓
+#   Filled with material 1, except center is empty
 
 pages:
+  # ────────────────────────── PAGE 1 ──────────────────────────
   - page: 1
     mask:
-      # The way the mask works is by having a list of materials
-      # And then a pattern to use those materials.
-
-      # The pattern is the rows in the GUI
-      # Each line must be 9 long, and the amount of rows should be the amount of rows in the GUI
-      # A zero represents nothing
-      # A 1 represents the first material
-      # A 2 represents the second material
-      # And so on, you can add up to 9.
-
+      # Materials to use in the pattern
       items:
-        - gray_stained_glass_pane
-        - black_stained_glass_pane
+        - gray_stained_glass_pane   # Material #1
+        - black_stained_glass_pane  # Material #2
+
+      # Pattern layout (read the visual guide above!)
+      # This creates a bordered frame with an open center area
+      #
+      # Visual representation of pattern below:
+      #   2 1 1 1 0 1 1 1 2    ← Row 1 (top)
+      #   2 1 1 1 1 1 1 1 2    ← Row 2
+      #   2 1 0 0 0 0 0 1 2    ← Row 3 (open center)
+      #   2 1 0 0 1 0 0 1 2    ← Row 4 (open center)
+      #   2 1 1 1 1 1 1 1 2    ← Row 5
+      #   2 1 1 1 0 1 1 1 2    ← Row 6 (bottom)
       pattern:
-        - "211101112"
-        - "211111112"
-        - "210000012"
-        - "210010012"
-        - "211111112"
-        - "211101112"
+        - "211101112"  # Row 1
+        - "211111112"  # Row 2
+        - "210000012"  # Row 3
+        - "210010012"  # Row 4
+        - "211111112"  # Row 5
+        - "211101112"  # Row 6
+
+  # ────────────────────────── PAGE 2 ──────────────────────────
+  # You can have different masks for each page!
   - page: 2
     mask:
       items:
-        - gray_stained_glass_pane
-        - red_stained_glass_pane
+        - gray_stained_glass_pane   # Material #1
+        - red_stained_glass_pane    # Material #2 (different color!)
       pattern:
         - "211101112"
         - "211111112"
@@ -81,47 +181,328 @@ pages:
         - "211111112"
         - "211101112"
 
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                           SLOTS (MENU ITEMS)                            │
+# └─────────────────────────────────────────────────────────────────────────┘
+# Slots are the clickable items in your menu
+# Each slot can have different actions for different click types
+#
+# CLICK TYPES:
+#   - left-click: Normal left click
+#   - right-click: Normal right click
+#   - shift-left-click: Shift + left click
+#   - shift-right-click: Shift + right click
+#   - middle-click: Middle mouse button
+#
+# ITEM FORMAT:
+#   material_name name:"Display Name" lore:"Line 1" lore:"Line 2"
+#   Examples:
+#     - diamond name:"&bShiny Diamond"
+#     - player_head head:%player% name:"&e%player%'s Head"
+#     - enchanted_book enchants:sharpness:5 name:"&dPower Book"
+#
+# LOCATION (row/column grid):
+#   Row 1: Top row    |  Column 1: Far left
+#   Row 6: Bottom row |  Column 9: Far right
+#   Example: row 3, column 5 = middle of 3rd row
+
 slots:
-  - item: barrier name:"&cClose"
-    lore: [ ]
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 1: Simple Close Button (No Permissions)
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: barrier name:"&c&lClose Menu"
+    lore:
+      - ""
+      - "&7Click to close this menu"
+      - ""
+
     location:
-      row: 6
-      column: 5
-      page: 1 # If you don't specify a page, it will be on all pages
+      row: 6      # Bottom row
+      column: 5   # Middle position
+      page: 1     # Only on page 1 (omit to show on all pages)
+      layer: middle  # Layer system: lower < middle < upper < top
 
-      # (Optional) You can specify the layer of the slot.
-      # The layer can be any of: lower, middle, upper, or top (defaults to middle)
-      # This is useful if you want to have a slot on top of another slot, and
-      # have the upper slot show if some conditions are met.
-      layer: middle
-
-    # Read https://plugins.auxilor.io/effects/configuring-a-condition
-    # The conditions required to click the item
+    # No conditions = anyone can click this
     conditions: [ ]
 
-    # If the item should be shown if the conditions are not met
+    # Should item be visible when conditions aren't met?
+    # false = hide item, true = show but can't click
     show-if-not-met: false
 
-    # Read https://plugins.auxilor.io/effects/configuring-an-effect
-    # The effects ran when the item is clicked
+    # Actions when left-clicked
     left-click:
       - id: send_message
         args:
-          message: "&cYou clicked the close button!"
+          message: "&aClosing menu..."
 
       - id: close_inventory
 
-  - item: player_head head:%player% name:"&f%player%"
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 2: Player Head (Shows Player Info)
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: player_head head:%player% name:"&e&l%player%"
+    lore:
+      - ""
+      - "&7This is your player head"
+      - "&7Health: &c%player_health%/%player_max_health%"
+      - "&7Level: &a%player_level%"
+      - ""
+
     location:
       row: 1
       column: 5
       page: 1
 
+    # No special conditions needed to see this
+    conditions: [ ]
+
+    # Example of different click actions
+    left-click:
+      - id: send_message
+        args:
+          message: "&aYou left-clicked your head!"
+
+    right-click:
+      - id: play_sound
+        args:
+          sound: ENTITY_PLAYER_LEVELUP
+          volume: 1.0
+          pitch: 1.0
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 3: VIP-Only Item (Permission Required)
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: diamond name:"&b&lVIP Diamond"
+    lore:
+      - ""
+      - "&7This item is only for VIP players!"
+      - "&aClick to claim your daily reward"
+      - ""
+      - "&7Required: &eVIP Rank"
+
+    location:
+      row: 3
+      column: 3
+      page: 1
+
+    # PERMISSION LOCK: Only players with this permission can click
+    conditions:
+      - id: has_permission
+        args:
+          permission: "menu.vip.access"
+
+    # Hide the item if player doesn't have permission
+    # Set to 'true' to show a "locked" version instead
+    show-if-not-met: false
+
+    left-click:
+      - id: give_money
+        args:
+          amount: 1000
+
+      - id: send_message
+        args:
+          message: "&a+$1000! VIP Daily Reward claimed!"
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 4: Locked Item (Shown but Unclickable)
+  # ═══════════════════════════════════════════════════════════════════════
+  # This demonstrates a "locked" item - visible to all but only
+  # clickable by players with the permission
+  - item: gold_ingot name:"&6&lPremium Feature"
+    lore:
+      - ""
+      - "&7This is a premium feature"
+      - "&cYou need permission to use this!"
+      - ""
+      - "&7Permission: &emenu.premium.use"
+
+    location:
+      row: 3
+      column: 5
+      page: 1
+
+    conditions:
+      - id: has_permission
+        args:
+          permission: "menu.premium.use"
+
+    # Show the item even if they don't have permission
+    # This creates a "locked" visual effect
+    show-if-not-met: true
+
+    left-click:
+      - id: send_message
+        args:
+          message: "&aYou unlocked the premium feature!"
+
+      - id: play_sound
+        args:
+          sound: UI_TOAST_CHALLENGE_COMPLETE
+          volume: 1.0
+          pitch: 1.0
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 5: Multi-Condition Item (Permission + Money)
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: emerald name:"&a&lExpensive Item"
+    lore:
+      - ""
+      - "&7This requires both money and permission"
+      - "&eRequired: &7$5000 + special.access permission"
+      - ""
+
+    location:
+      row: 3
+      column: 7
+      page: 1
+
+    # Multiple conditions - ALL must be met
+    conditions:
+      - id: has_permission
+        args:
+          permission: "menu.special.access"
+
+      - id: has_money
+        args:
+          amount: 5000
+
+    show-if-not-met: true
+
+    left-click:
+      - id: take_money
+        args:
+          amount: 5000
+
+      - id: give_item
+        args:
+          item: diamond amount:64
+
+      - id: send_message
+        args:
+          message: "&aYou bought 64 diamonds for $5000!"
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 6: Admin-Only Command Button
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: command_block name:"&c&lAdmin Panel"
+    lore:
+      - ""
+      - "&7Only admins can click this"
+      - "&cExecutes powerful commands!"
+      - ""
+
+    location:
+      row: 5
+      column: 9
+      page: 1
+
+    # Check if player is OP or has admin permission
+    conditions:
+      - id: has_permission
+        args:
+          permission: "menu.admin"
+
+    show-if-not-met: false
+
+    left-click:
+      # Run command as console (more powerful)
+      - id: run_command_as_console
+        args:
+          command: "say %player% clicked the admin button!"
+
+      # Run command as player
+      - id: run_command
+        args:
+          command: "spawn"
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 7: Layer System (Overlapping Slots)
+  # ═══════════════════════════════════════════════════════════════════════
+  # This is the "base" layer - always shows
+  - item: red_wool name:"&c&lLocked Feature"
+    lore:
+      - ""
+      - "&7You haven't unlocked this yet"
+      - ""
+
+    location:
+      row: 4
+      column: 5
+      page: 1
+      layer: lower  # Bottom layer
+
+    conditions: [ ]
+
+    left-click:
+      - id: send_message
+        args:
+          message: "&cThis feature is locked!"
+
+  # This slot is at the SAME position but higher layer
+  # It will show INSTEAD of the red wool if player has permission
+  - item: green_wool name:"&a&lUnlocked Feature!"
+    lore:
+      - ""
+      - "&7You have unlocked this feature!"
+      - "&aClick to use it"
+      - ""
+
+    location:
+      row: 4
+      column: 5
+      page: 1
+      layer: upper  # Higher layer - shows on top
+
+    # This one requires permission
+    conditions:
+      - id: has_permission
+        args:
+          permission: "menu.feature.unlocked"
+
+    # Only show if permission is met
+    show-if-not-met: false
+
+    left-click:
+      - id: send_message
+        args:
+          message: "&aYou used the unlocked feature!"
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 8: Menu Navigation (Open Another Menu)
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: book name:"&e&lOther Menus"
+    lore:
+      - ""
+      - "&7Shift+Right-Click to open shop menu"
+      - "&7(if you have permission)"
+      - ""
+
+    location:
+      row: 2
+      column: 8
+      page: 1
+
     shift-right-click:
       - id: open_menu
         args:
-          menu: other_example_menu
+          menu: shop  # Opens shop.yml menu
 
-      - id: run_command
+  # ═══════════════════════════════════════════════════════════════════════
+  # EXAMPLE 9: Different Actions Per Page
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: compass name:"&b&lPage 2 Item"
+    lore:
+      - ""
+      - "&7This item only appears on page 2"
+      - ""
+
+    location:
+      row: 3
+      column: 5
+      page: 2  # Only on page 2
+
+    left-click:
+      - id: send_message
         args:
-          command: "eco give %player% 100"
+          message: "&aYou're on page 2!"

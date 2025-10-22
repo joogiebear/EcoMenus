@@ -1,0 +1,460 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#                     ECOMENUS - TELEPORT/WARPS EXAMPLE
+# ═══════════════════════════════════════════════════════════════════════════
+# This is a practical example of a teleport/warp menu
+# Files starting with _ are not loaded, so rename to "warps.yml" to use
+#
+# FEATURES DEMONSTRATED:
+#   - Free public warps
+#   - VIP-only warp locations
+#   - Paid teleports (costs money)
+#   - Cooldown messages
+#   - Different warps per rank
+#   - Teleport with countdown effects
+#
+# SETUP REQUIRED:
+#   - Replace coordinates (x y z world) with your actual warp locations
+#   - Adjust permissions to match your rank system
+#   - Optional: Install EssentialsX for /warp command integration
+# ═══════════════════════════════════════════════════════════════════════════
+
+title: "&8[ &d&lTeleport Hub &8]"
+command: warps
+rows: 5
+
+# Anyone can open the warps menu
+conditions: [ ]
+
+open-effects:
+  - id: play_sound
+    args:
+      sound: ENTITY_ENDERMAN_TELEPORT
+      volume: 0.3
+      pitch: 1.5
+
+close-effects:
+  - id: play_sound
+    args:
+      sound: BLOCK_PORTAL_TRIGGER
+      volume: 0.2
+      pitch: 0.8
+
+# No pagination needed for this menu
+forwards-arrow:
+  enabled: false
+
+backwards-arrow:
+  enabled: false
+
+pages:
+  - page: 1
+    mask:
+      items:
+        - black_stained_glass_pane
+        - purple_stained_glass_pane
+      pattern:
+        - "111111111"
+        - "122222221"
+        - "122222221"
+        - "122222221"
+        - "111111111"
+
+slots:
+  # ═══════════════════════════════════════════════════════════════════════
+  # MENU TITLE/INFO
+  # ═══════════════════════════════════════════════════════════════════════
+  - item: ender_pearl name:"&d&lTeleport Menu"
+    lore:
+      - ""
+      - "&7Select a location to teleport"
+      - "&7Some warps require permissions or money"
+      - ""
+    location:
+      row: 1
+      column: 5
+    conditions: [ ]
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # FREE PUBLIC WARPS (Anyone can use)
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # Spawn - Always free
+  - item: bed name:"&a&lSpawn"
+    lore:
+      - ""
+      - "&7The server spawn point"
+      - "&aFree teleport!"
+      - ""
+      - "&eClick to teleport"
+    location:
+      row: 2
+      column: 2
+    conditions: [ ]
+
+    left-click:
+      # Option 1: Use EssentialsX warp command
+      - id: run_command
+        args:
+          command: "spawn"
+
+      # Option 2: Use direct teleport effect (uncomment and set coordinates)
+      # - id: teleport
+      #   args:
+      #     x: 0
+      #     y: 64
+      #     z: 0
+      #     world: world
+
+      - id: send_message
+        args:
+          message: "&aTeleporting to Spawn..."
+      - id: play_sound
+        args:
+          sound: ENTITY_ENDERMAN_TELEPORT
+          volume: 1.0
+          pitch: 1.0
+
+  # Mining World - Free
+  - item: iron_pickaxe name:"&7&lMining World"
+    lore:
+      - ""
+      - "&7A world for gathering resources"
+      - "&cResets every week!"
+      - ""
+      - "&aFree teleport!"
+      - "&eClick to teleport"
+    location:
+      row: 2
+      column: 3
+    conditions: [ ]
+
+    left-click:
+      - id: run_command
+        args:
+          command: "warp mining"
+      - id: send_message
+        args:
+          message: "&7Teleporting to Mining World..."
+      - id: play_sound
+        args:
+          sound: ENTITY_ENDERMAN_TELEPORT
+          volume: 1.0
+          pitch: 1.0
+
+  # PvP Arena - Free but shows warning
+  - item: diamond_sword name:"&c&lPvP Arena"
+    lore:
+      - ""
+      - "&7Battle other players here"
+      - "&c⚠ PvP is enabled!"
+      - "&c⚠ Keep inventory is OFF!"
+      - ""
+      - "&aFree teleport!"
+      - "&eClick to teleport"
+    location:
+      row: 2
+      column: 4
+    conditions: [ ]
+
+    left-click:
+      - id: send_message
+        args:
+          message: "&c⚠ Warning: Entering PvP zone!"
+      - id: run_command
+        args:
+          command: "warp pvp"
+      - id: play_sound
+        args:
+          sound: ENTITY_ENDER_DRAGON_GROWL
+          volume: 0.5
+          pitch: 1.5
+
+  # Market/Shop - Free
+  - item: emerald name:"&2&lMarket"
+    lore:
+      - ""
+      - "&7Player shops and trading"
+      - "&7Rent a shop plot here!"
+      - ""
+      - "&aFree teleport!"
+      - "&eClick to teleport"
+    location:
+      row: 2
+      column: 5
+    conditions: [ ]
+
+    left-click:
+      - id: run_command
+        args:
+          command: "warp market"
+      - id: send_message
+        args:
+          message: "&2Teleporting to Market..."
+      - id: play_sound
+        args:
+          sound: ENTITY_ENDERMAN_TELEPORT
+          volume: 1.0
+          pitch: 1.0
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # VIP WARPS (Permission Required - Hidden from non-VIPs)
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # VIP Lounge
+  - item: gold_block name:"&6&lVIP Lounge"
+    lore:
+      - ""
+      - "&7Exclusive VIP relaxation area"
+      - "&7Special perks and bonuses here!"
+      - ""
+      - "&6⭐ VIP Only"
+      - "&aFree for VIPs!"
+      - "&eClick to teleport"
+    location:
+      row: 3
+      column: 3
+
+    # Only show to VIPs
+    conditions:
+      - id: has_permission
+        args:
+          permission: "warps.vip"
+
+    show-if-not-met: false
+
+    left-click:
+      - id: run_command
+        args:
+          command: "warp viplounge"
+      - id: send_message
+        args:
+          message: "&6Teleporting to VIP Lounge..."
+      - id: play_sound
+        args:
+          sound: ENTITY_PLAYER_LEVELUP
+          volume: 0.5
+          pitch: 1.2
+
+  # End Farm (VIP+ Only)
+  - item: end_stone name:"&5&lEnd Farm"
+    lore:
+      - ""
+      - "&7Safe enderman farming area"
+      - "&7Great for XP and ender pearls"
+      - ""
+      - "&d⭐⭐ VIP+ Only"
+      - "&aFree for VIP+!"
+      - "&eClick to teleport"
+    location:
+      row: 3
+      column: 4
+
+    conditions:
+      - id: has_permission
+        args:
+          permission: "warps.vip.plus"
+
+    show-if-not-met: false
+
+    left-click:
+      - id: run_command
+        args:
+          command: "warp endfarm"
+      - id: send_message
+        args:
+          message: "&5Teleporting to End Farm..."
+      - id: play_sound
+        args:
+          sound: ENTITY_ENDERMAN_TELEPORT
+          volume: 1.0
+          pitch: 0.8
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # PAID WARPS (Costs Money)
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # Nether Hub - Costs money
+  - item: netherrack name:"&c&lNether Hub"
+    lore:
+      - ""
+      - "&7Fast travel across the nether"
+      - "&7Connect to highways here"
+      - ""
+      - "&6Cost: $100 per use"
+      - "&8Your balance: &e$%vault_eco_balance_formatted%"
+      - ""
+      - "&eClick to teleport"
+    location:
+      row: 3
+      column: 6
+
+    # Must have enough money
+    conditions:
+      - id: has_money
+        args:
+          amount: 100
+
+    # Show the warp even if they don't have money (with locked message)
+    show-if-not-met: true
+
+    left-click:
+      - id: take_money
+        args:
+          amount: 100
+      - id: run_command
+        args:
+          command: "warp netherhub"
+      - id: send_message
+        args:
+          message: "&cTeleporting to Nether Hub... (-$100)"
+      - id: play_sound
+        args:
+          sound: BLOCK_PORTAL_TRAVEL
+          volume: 0.5
+          pitch: 1.0
+
+  # Resource Islands - Expensive
+  - item: grass_block name:"&a&lResource Islands"
+    lore:
+      - ""
+      - "&7Untouched islands with rare resources"
+      - "&7Perfect for clean mining"
+      - ""
+      - "&6Cost: $500 per use"
+      - "&8Your balance: &e$%vault_eco_balance_formatted%"
+      - ""
+      - "&eClick to teleport"
+    location:
+      row: 3
+      column: 7
+
+    conditions:
+      - id: has_money
+        args:
+          amount: 500
+
+    show-if-not-met: true
+
+    left-click:
+      - id: take_money
+        args:
+          amount: 500
+      - id: run_command
+        args:
+          command: "warp islands"
+      - id: send_message
+        args:
+          message: "&aTeleporting to Resource Islands... (-$500)"
+      - id: play_sound
+        args:
+          sound: ENTITY_ENDERMAN_TELEPORT
+          volume: 1.0
+          pitch: 1.2
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # LOCKED WARP EXAMPLE (Shown but Unclickable without Permission)
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # Admin Area - Locked
+  - item: barrier name:"&c&lAdmin Area"
+    lore:
+      - ""
+      - "&7Server administration building"
+      - ""
+      - "&c&l✖ LOCKED"
+      - "&7You need admin permission"
+      - ""
+    location:
+      row: 4
+      column: 8
+
+    conditions:
+      - id: has_permission
+        args:
+          permission: "warps.admin"
+
+    # Show it to everyone but they can't click
+    show-if-not-met: true
+
+    left-click:
+      - id: run_command
+        args:
+          command: "warp admin"
+      - id: send_message
+        args:
+          message: "&cTeleporting to Admin Area..."
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # NAVIGATION & UTILITY
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # Back Home (Personal Home)
+  - item: oak_door name:"&e&lYour Home"
+    lore:
+      - ""
+      - "&7Teleport to your home"
+      - "&7Set with /sethome"
+      - ""
+      - "&aFree!"
+      - "&eClick to teleport"
+    location:
+      row: 4
+      column: 2
+    conditions: [ ]
+
+    left-click:
+      - id: run_command
+        args:
+          command: "home"
+      - id: send_message
+        args:
+          message: "&eTeleporting home..."
+      - id: close_inventory
+
+  # Random Teleport
+  - item: compass name:"&b&lRandom Teleport"
+    lore:
+      - ""
+      - "&7Teleport to a random location"
+      - "&7Great for finding a base spot!"
+      - ""
+      - "&6Cost: $200"
+      - "&8Your balance: &e$%vault_eco_balance_formatted%"
+      - ""
+      - "&eClick to teleport"
+    location:
+      row: 4
+      column: 4
+
+    conditions:
+      - id: has_money
+        args:
+          amount: 200
+
+    show-if-not-met: true
+
+    left-click:
+      - id: take_money
+        args:
+          amount: 200
+      - id: run_command
+        args:
+          command: "rtp"
+      - id: send_message
+        args:
+          message: "&bFinding random location... (-$200)"
+      - id: close_inventory
+
+  # Close Button
+  - item: barrier name:"&c&lClose"
+    lore:
+      - ""
+      - "&7Exit this menu"
+      - ""
+    location:
+      row: 5
+      column: 5
+    conditions: [ ]
+
+    left-click:
+      - id: close_inventory
