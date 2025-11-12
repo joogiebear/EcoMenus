@@ -21,6 +21,19 @@ import com.willfp.libreforge.effects.executors.impl.NormalExecutorFactory
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 
+/**
+ * Represents a configurable slot in a menu that can be defined via YAML configuration.
+ *
+ * Supports:
+ * - Dynamic item display with PlaceholderAPI
+ * - Condition-based visibility
+ * - Click handlers for all click types (left, right, shift, middle)
+ * - Custom lore and item properties
+ * - LibreForge conditions and effects
+ *
+ * @property baseContext The violation context for error reporting
+ * @property config The configuration defining this slot's properties
+ */
 class ConfigurableSlot(
     baseContext: ViolationContext,
     private val config: Config
